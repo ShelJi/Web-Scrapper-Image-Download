@@ -35,6 +35,15 @@ from typing import List
 import random
 
 
+st.set_page_config(
+        page_title="Image Scrapper",
+        page_icon="😇",
+        menu_items={
+            'About': "# This is a Streamlit image scrapper. This is an *extremely* cool application!"
+        }
+    )
+
+
 BASE_SEARCH_URL = "https://unsplash.com/s/photos/"
 BASE_FREE_URL = "https://images.unsplash.com/"
 BASE_PREMIUM_URL = "https://plus.unsplash.com/"
