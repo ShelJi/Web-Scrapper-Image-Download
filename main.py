@@ -91,7 +91,6 @@ def img_extracter():
                     print_img(url)
 
 with st.form("my_form"):
-    """Form for searching"""
     search = st.text_input("Search", placeholder="Search photos", label_visibility="collapsed")
     submitted = st.form_submit_button('Search')
 
