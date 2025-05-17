@@ -1,14 +1,3 @@
-# import streamlit as st
-
-
-# """
-# https://media.istockphoto.com/id/2163598703/photo/close-up-of-a-beautiful-pink-chrysanthemum-flower-in-the-garden.webp?a=1&b=1&s=612x612&w=0&k=20&c=HNrL3JaJzxMYViGWRAfxnR5kh7QpPxrr97cYLMS8sI8=
-# https://media.istockphoto.com/id/2163598703/photo/close-up-of-a-beautiful-pink-chrysanthemum-flower-in-the-garden.jpg?s=2048x2048&w=is&k=20&c=Z8E-GU7GOf_OSHJNWvHM6ZPByX2AMrrnMdMzuKFh1LA=
-# """
-
-# premium_domain_url = "https://plus.unsplash.com/premium_photo-"
-# free_domain_url = "https://images.unsplash.com/photo-"
-
 # premium_max_width = "?w=900"
 # width = "?w="
 # height = "&h="
@@ -37,55 +26,104 @@
 # # st.image(f"{free_domain_url}1525310072745-f49212b5ac6d?auto=format&fit=crop&w=800&h=600&crop=faces&dpr=2&blur=90&sat=-30")
 # # st.image(f"{free_domain_url}1525310072745-f49212b5ac6c?auto=format&fit=crop&w=800&h=600&dpr=2&fm=webp")
 
-
-# # https://images.unsplash.com/file-1715714098234-25b8b4e9d8faimage?w=416&dpr=2&auto=format&fit=crop&q=60
-
-# free_domain_url = "https://images.unsplash.com/"
-# link = st.text_input("Enter the url from unsplash")
-
-# is_premium = False if link.strip().split(".unsplash.com")[0] == "https://images" else True
-# # print(is_premium)
-
-# img_id = link.strip().split("?")[0].split(".unsplash.com/")[1]
-# # print(img_id)
-
-# st.image(f"{free_domain_url}{img_id}")
-
-# """
-# https://images.unsplash.com/photo-1682695797221-8164ff1fafc9
-# https://images.unsplash.com/photo-1682695797221-8164ff1fafc9
-
-# https://images.unsplash.com/file-1715714098234-25b8b4e9d8faimage
-
-# https://unsplash.com/photos/pink-petaled-flower-YdAqiUkUoWA
-# https://unsplash.com/photos/podium-display-design-with-paper-art-pastel-color-flower-abstract-background-3d-rendering-X3J8H6Svi_s
-# https://unsplash.com/photos/sakura-tree-in-bloom-7NBO76G5JsE
-# https://unsplash.com/photos/a-bouquet-of-flowers-sitting-on-top-of-a-wooden-table-ElxBX6bsAgQ
-# https://unsplash.com/photos/a-bunch-of-flowers-that-are-in-a-vase-yurVcRioP8o
-
-# https://images.unsplash.com/photo-1474112704314-8162b7749a90
-# """
-
-
 ##########################################################################################
-
 import streamlit as st
-from playwright.sync_api import sync_playwright
+import subprocess
+import os
+from bs4 import BeautifulSoup
+from typing import List
+import random
 
 
-BASE_SEARCH_URL = "https://unsplash.com/s/photos/flower"
+BASE_SEARCH_URL = "https://unsplash.com/s/photos/"
+BASE_FREE_URL = "https://images.unsplash.com/"
+BASE_PREMIUM_URL = "https://plus.unsplash.com/"
+FILE_NAME = "temp.html"
 
-search = st.text_input("", placeholder="Search Photos")
 
-if search:
+def extract_img_id(urls: List[str]) -> List[str]:
+    """Extract image id from url."""
+    extracted = []
+    for i in urls:
+        extracted.append(i.split("?")[0].split("unsplash.com/")[1])
+    return extracted
+
+def random_emoji_returner():
+    """Returns a emoji radomly."""
+    emojis = ["😀","😁","😂","🤣","😃","😄","😅","😆","😗","🥰","😘",
+              "😍","😎","😋","😊","😉","😙","😚","🙂","🤗","🤩","🤔",
+              "😮","😣","😏","🙄","😶","😑","😐","🤐","😯","😪","😫",
+              "😛","😜","😲","🤪","😳","😠","🤓","🤡","🤭","🧐","😇",
+              "🥳","🥺","🤫","🎈","🎄","✨","🎃","❤","🧡","💛","💚"]
+    return random.choice(emojis)
+
+def img_extracter():
+    """Extract image from FILE_NAME and show in page."""
+    with open(FILE_NAME, "r", encoding="utf-8") as html:
+        soup = BeautifulSoup(html, "html.parser")
+        images = soup.find_all("img")
+         
+        image_urls = [img["src"] for img in images if "unsplash.com" in img["src"]] # type: ignore
+        # print(image_urls)
+        
+        extracted_img_id = extract_img_id(image_urls) # type: ignore
+        
+        col1 = st.empty()
+        col2 = st.empty()
+        col1, col2 = st.columns(2)
+        # col size ~344
+        
+        def print_img(url):
+            if url.startswith("premium"):
+                st.image(f"{BASE_PREMIUM_URL}{url}?w=350&q=60")
+                st.link_button(f"Download {random_emoji_returner()}", f"{BASE_PREMIUM_URL}{url}?w=900&q=100&dpr=1&fm=png")
+                
+            else:
+                st.image(f"{BASE_FREE_URL}{url}?w=350&q=60")
+                st.link_button(f"Download {random_emoji_returner()}", f"{BASE_FREE_URL}{url}?w=auto&q=100&dpr=1&fm=png")
+
+        for i, url in enumerate(extracted_img_id):
+            if i % 2 == 0:
+                with col1:
+                    print_img(url)
+            else:
+                with col2:
+                    print_img(url)
+
+with st.form("my_form"):
+    """Form for searching"""
+    search = st.text_input("Search", placeholder="Search photos", label_visibility="collapsed")
+    submitted = st.form_submit_button('Search')
+
+if search or submitted:
     
-    with sync_playwright() as pr:
-        browser = pr.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(f"{BASE_SEARCH_URL}{search}")
-        page.wait_for_selector("figure")
-        content = page.content()
-        browser.close()
-    
-    st.write(f"{BASE_SEARCH_URL}{search}")
-    st.write(content)
+    with st.spinner(":) Scrapping..."):
+        # scrap_web(BASE_SEARCH_URL, search)
+        
+        result = subprocess.run(
+            ["python", "webscrapper.py", search],
+            capture_output=True,
+            text=True
+        )
+        # result1 = subprocess.run(
+        #     ["python", "--version"],
+        #     capture_output=True,
+        #     text=True
+        # )
+
+        # Show output and errors from the subprocess for debugging
+        # st.subheader("Scraper Output")
+        # st.code(result.stdout + result.stderr)
+        # st.code(result1.stdout + result1.stderr)
+                
+        if os.path.exists(FILE_NAME):
+            # with open(FILE_NAME, "r", encoding="utf-8") as f:
+            #     st.html(f.read())
+
+            img_extracter()
+            
+        else:
+            st.error("Scraping failed or file not found.")
+        
+        # st.write(f"Showing results for: [{BASE_SEARCH_URL}{search}]({BASE_SEARCH_URL}{search})")
+

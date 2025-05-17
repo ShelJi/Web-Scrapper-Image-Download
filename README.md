@@ -1,11 +1,18 @@
 # Web Scraping Image Download
 
+Scrap images from unsplash.com including premium images and allowing for download both free and premium in maximum quality possible without watermark.
+
 ## Installation
 
 Python version : Python 3.11.0
 
+After cloning repository run commands one-by-one
+
 ```bash
-pip install streamlit 
+pip install streamlit playwright
+playwright install
+
+streamlit run main.py
 ```
 
 ## What is Web Scrapping
@@ -31,6 +38,6 @@ Web scraping is the process of using automated tools, often called bots or crawl
 
 ## Link
 
-`https://unsplash.com/s/photos/{KEYWORD}`
+To Search: `https://unsplash.com/s/photos/{KEYWORD}`
 
-div.AE2it=>div.I7e4t=>figure=>div.vthK5=>div.gr86h=>a.mG0SP=>img.srcset
+**main.py** and **scrapper.py** are the main files.
